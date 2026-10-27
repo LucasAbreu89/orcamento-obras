@@ -1,0 +1,23 @@
+# Versionar somente procedimentos e instruções auxiliares.
+# Novas pastas de obras ficam ignoradas por padrão.
+/*
+!/.gitignore
+!/AGENTS.md
+!/procedimentos-orcamento/
+!/.agents/
+
+# Manter apenas o atalho portátil da skill no diretório de agentes.
+/.agents/*
+!/.agents/skills/
+/.agents/skills/*
+!/.agents/skills/procedimentos-orcamento
+
+# Fontes, planilhas, evidências e resultados das obras permanecem locais.
+/KFC/
+/LCA/
+
+# Arquivos locais e caches.
+.DS_Store
+acad.err
+__pycache__/
+*.py[cod]
