@@ -5,12 +5,19 @@
 !/AGENTS.md
 !/procedimentos-orcamento/
 !/.agents/
+!/.claude/
 
 # Manter apenas o atalho portátil da skill no diretório de agentes.
 /.agents/*
 !/.agents/skills/
 /.agents/skills/*
 !/.agents/skills/procedimentos-orcamento
+
+# O mesmo atalho para o Claude Code; o restante de .claude fica local.
+/.claude/*
+!/.claude/skills/
+/.claude/skills/*
+!/.claude/skills/procedimentos-orcamento
 
 # Fontes, planilhas, evidências e resultados das obras permanecem locais.
 /KFC/

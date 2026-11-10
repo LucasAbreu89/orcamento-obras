@@ -74,4 +74,4 @@ Cada execução cria `levantamento-orcamento/execucoes/AAAAMMDD_HHMMSS/` dentro 
 
 ## Instalação da skill
 
-Neste workspace, a skill está registrada por um link em `.agents/skills/procedimentos-orcamento` que aponta para esta pasta. Para usar em outro projeto, indique o caminho do `SKILL.md` ou disponibilize a pasta como skill naquele ambiente.
+Neste workspace, a skill está registrada por dois links que apontam para esta pasta: `.agents/skills/procedimentos-orcamento`, lido pelo Codex, e `.claude/skills/procedimentos-orcamento`, lido pelo Claude Code. No Codex, ela é chamada por `$procedimentos-orcamento` ou pela lista de skills; no Claude Code, por `/procedimentos-orcamento`. Para usar em outro projeto, indique o caminho do `SKILL.md` ou disponibilize a pasta como skill naquele ambiente.
