@@ -21,7 +21,7 @@ Regras para as próximas tarefas:
 - Preservar os arquivos originais; criar os contornos de conferência em cópias identificadas.
 - Um arquivo de projeto pode conter várias plantas/vistas no Model, em layouts e em combinações de camadas. Registrar a cobertura por representação, sem presumir que a vista inicial mostre tudo.
 - Um Excel pode conter várias abas e listas de serviços, inclusive ocultas. Mapear seu conteúdo e relações antes de levantar, sem somar resumos novamente aos detalhes.
-- Preservar intactas as colunas de quantidade recebidas, inclusive cabeçalhos, valores, fórmulas e vazios. Levantar os itens independentemente em coluna própria `QTD LEVANTADA`, vinculada às memórias, mesmo quando já houver quantidades preenchidas. Usar as quantidades originais como referência para comparação compatível.
+- Preservar intactas as colunas de quantidade recebidas, inclusive cabeçalhos, valores, fórmulas e vazios. Levantar os itens independentemente em coluna própria `QTD LEVANTADA`, vinculada às memórias, mesmo quando já houver quantidades preenchidas. Ignorar preços e quantidades já preenchidas: não ordenam o trabalho, não entram na conta e não servem de conferência; comparação só quando o usuário pedir.
 - Não ajustar a conta para coincidir com uma etiqueta nem tratar resultados próximos como iguais.
 - Antes de medir, apresentar o escopo proposto (abas, disciplinas, natureza dos itens, critérios de maior impacto) e aguardar confirmação, salvo quando o pedido já o definir ([00 §3](procedimentos-orcamento/references/00_fluxo_mestre.md)).
 - Usar os critérios padrão de [11](procedimentos-orcamento/references/11_criterios_padrao.md) quando contrato, composição ou usuário não definirem outro, registrando a fonte na aba `Critérios`.
@@ -43,7 +43,7 @@ Regras para as próximas tarefas:
 | Prints marcados e auditoria visual por item | [06, seção 5 — Evidências vinculadas às parcelas e aos estados](procedimentos-orcamento/references/06_quantitativos_e_memorias.md#evidencias-visuais-por-item) |
 | Kit de scripts, rotas e operação dos aplicativos | [07 — Ferramentas e aplicativos](procedimentos-orcamento/references/07_ferramentas_e_aplicativos.md) |
 | Conferência e entrega | [08 — Conferência, comparação e entrega](procedimentos-orcamento/references/08_conferencia_comparacao_e_entrega.md) |
-| Agentes, retomada e revisões de projeto | [09 — Agentes, retomada e revisões](procedimentos-orcamento/references/09_agentes_retomada_e_revisoes.md) |
+| Agentes e modelos por tarefa, retomada e revisões de projeto | [09 — Agentes, modelos, retomada e revisões](procedimentos-orcamento/references/09_agentes_retomada_e_revisoes.md) |
 | Referências técnicas e precedência | [10 — Boas práticas e fontes](procedimentos-orcamento/references/10_boas_praticas_e_fontes.md) |
 | Critérios padrão de medição | [11 — Critérios padrão](procedimentos-orcamento/references/11_criterios_padrao.md) |
 | Modelo de dados do levantamento | [Esquema do levantamento.json](procedimentos-orcamento/assets/ESQUEMA_LEVANTAMENTO.md) |

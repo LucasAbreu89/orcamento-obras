@@ -29,9 +29,7 @@ A escolha entre os degraus 4 e 5:
 - **Pendência** sempre que a resposta depender de decisão do cliente ou do projetista: escopo, especificação, solução executiva.
 - Nos demais casos, estimar a faixa plausível do dado e o efeito dela na quantidade do item:
   - efeito de até **10%** (limite ajustável no checkpoint) → **premissa**;
-  - efeito acima do limite em item **curva A** → **pendência**;
-  - efeito acima do limite em item **curva B ou C** → **premissa**, com a faixa registrada no campo Impacto.
-- Sem preços na planilha (sem curva ABC), vale só o limite de 10%.
+  - efeito acima do limite → **pendência**.
 
 O **nível de premissas** é combinado no checkpoint:
 
@@ -49,7 +47,7 @@ Entre interpretações plausíveis, nunca escolher pela proximidade com um total
 |---|---|
 | ID | `P001`… |
 | Itens | IDs dos itens afetados |
-| Parâmetro | o que foi adotado (ex.: altura da divisória até a laje) |
+| Parâmetro | o que foi adotado (ex.: altura de subida da impermeabilização) |
 | Valor adotado | número e unidade |
 | Base | por que esse valor: elemento vizinho, norma, prática usual, decisão do usuário |
 | Impacto | efeito estimado na quantidade (ex.: ±0,30 m na altura = ±6 m²) |

@@ -33,7 +33,8 @@ Quando uma representação vai sustentar uma quantidade, conferir:
 1. **Visibilidade:** camadas desligadas ou congeladas (no Model e por viewport), recortes e referências externas ausentes. Ligar todas as camadas de uma vez pode sobrepor existente, demolição e proposta; investigar as combinações que o projetista organizou e registrar as consultadas.
 2. **Unidade e escala:** `$INSUNITS` e pelo menos duas cotas conhecidas em direções diferentes ([04 §3](04_calculo_de_areas.md)).
 3. **Estado físico:** legenda de existente, demolir e construir; hachura ou tracejado só valem com legenda.
-4. **Compatibilidade:** PDF e DWG de mesmo nome não são necessariamente a mesma revisão; comparar carimbo, cotas e detalhes. Conflito vira pendência com as duas fontes, e a escolha nunca é a versão que fecha a conta.
+4. **PDF e DWG da mesma prancha:** o PDF é o documento emitido e vale para ler o que está representado (o que aparece, fase, notas, carimbo) e como referência dos prints, que mostram o mesmo conteúdo da prancha emitida. O DWG ou DXF fornece a geometria: coordenadas, comprimentos e contagens. O que só existe no DWG e não aparece em nenhuma prancha emitida (camada desligada ou congelada em todas as vistas, desenho fora das pranchas) não entra na quantidade; se puder afetar um item, vira pendência com as duas fontes.
+5. **Compatibilidade:** PDF e DWG de mesmo nome não são necessariamente a mesma revisão; comparar carimbo, cotas e detalhes. Conflito vira pendência com as duas fontes, e a escolha nunca é a versão que fecha a conta.
 
 Mudanças de visibilidade e marcações acontecem em cópia identificada.
 

@@ -38,13 +38,15 @@ Planilha de serviços: /caminho/da/obra/servicos.xlsx
 
 Para um pedido menor, diga o alcance: "só catalogar", "só os itens 3.1 a 3.8", "só comparar com a coluna do empreiteiro".
 
+Inicie a chamada no modelo de nível topo da tabela de [references/09](references/09_agentes_retomada_e_revisoes.md); os demais o agente escolhe por ela.
+
 ## O que acontece
 
 1. O agente checa as ferramentas, inventaria os arquivos, faz backup e uma "fotografia" da planilha.
 2. Lê todos os projetos (todas as pranchas, layouts e camadas) e monta um catálogo.
 3. Mapeia todas as abas da planilha, classifica os itens e liga cada um à especificação do projeto.
 4. **Para e mostra o escopo proposto**: abas e itens que vai levantar, disciplinas cobertas, itens que são custo indireto, critérios de maior impacto e documentos faltantes. Você confirma ou corrige numa resposta. (Se o pedido já disser tudo isso, ele segue direto e registra as escolhas como premissas.)
-5. Mede por elemento (ambientes, paredes, vãos, forros, pontos) e apropria cada item, começando pelos de maior valor.
+5. Mede por elemento (ambientes, paredes, vãos, forros, pontos) e apropria cada item.
 6. Gera a planilha de entrega e os prints marcados a partir de um arquivo de dados único.
 7. Valida tudo por script (originais intactos, vínculos, estados, prints, valores recalculados) e entrega.
 

@@ -359,7 +359,7 @@ class Gerador:
             ("A9", "Premissas", self._resumo_ids(item.get("premissas"), self.dados.get("premissas"), "parametro")),
             ("A10", "Pendências", self._resumo_ids(item.get("pendencias"), self.dados.get("pendencias"), "pergunta")),
             ("A11", "Fontes", ", ".join(item.get("fontes") or []) or self._fontes_das_parcelas(item)),
-            ("A12", "Natureza / curva ABC", f"{item.get('natureza')} / {item.get('abc') or '—'}"),
+            ("A12", "Natureza", item.get("natureza")),
             ("A14", "O que entrou", (item.get("texto") or {}).get("entrou", "")),
             ("A15", "O que ficou fora", (item.get("texto") or {}).get("ficou_fora", "")),
             ("A16", "O que falta", (item.get("texto") or {}).get("falta", "")),

@@ -42,7 +42,6 @@ Em cada lista, `linha_final` é opcional (obrigatória na prática quando há v�
 | `descricao`, `unidade` | sim | como recebidos |
 | `natureza` | sim | `medivel`, `parametro`, `indireto` ou `fora_escopo` ([02 §3](../references/02_planilha_escopo_e_mapeamento.md)) |
 | `estado` | sim | `CONFIRMADO`, `PREMISSA`, `SUBTOTAL`, `PENDENTE` ou `NÃO APLICÁVEL` ([03 §1](../references/03_pendencias_premissas_e_estados.md)) |
-| `abc` | não | `A`, `B` ou `C` |
 | `criterio` | não | ID em `criterios` |
 | `premissas`, `pendencias`, `fontes` | não | listas de IDs |
 | `parcelas` | conforme estado | tabela da conta (abaixo) |
@@ -108,7 +107,7 @@ O validador da entrega ainda acusa linha das listas com descrição e unidade se
   "pendencias": [],
   "itens": [{
     "chave": "Orçamento!12", "id": "2.1", "descricao": "Pintura acrílica em paredes internas", "unidade": "m²",
-    "natureza": "medivel", "estado": "PREMISSA", "abc": "B", "criterio": "C01", "premissas": ["P001"],
+    "natureza": "medivel", "estado": "PREMISSA", "criterio": "C01", "premissas": ["P001"],
     "parcelas": [
       {"id": "S01", "descricao": "Parede norte, face interna", "local": "Sala", "dimensoes": [4.20, 2.70], "unidade": "m²", "origem": "cotas", "fonte": "F001.V01", "refs": ["P001"]},
       {"id": "S02", "descricao": "Parede leste, face interna", "local": "Sala", "dimensoes": [3.10, 2.70], "unidade": "m²", "origem": "cotas", "fonte": "F001.V01", "refs": ["P001"]},

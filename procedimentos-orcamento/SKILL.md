@@ -9,7 +9,7 @@ O resultado é uma planilha conferível: a lista de serviços recebida intacta, 
 
 ## Regras que valem sempre
 
-1. **Medição independente.** Quantidades já preenchidas ficam intactas (valores, fórmulas e vazios) e servem só para comparação. Nosso resultado vai para `QTD LEVANTADA`.
+1. **Medição independente.** Preços e quantidades já preenchidas ficam intactos (valores, fórmulas e vazios) e são ignorados: não ordenam o trabalho, não entram na conta e não servem de conferência; só são lidos se o usuário pedir uma comparação ([02 §4](references/02_planilha_escopo_e_mapeamento.md)). Nosso resultado vai para `QTD LEVANTADA`.
 2. **Origem junto ao número.** Todo valor diz se veio de indicação do projeto, cotas, coordenadas, contagem, comando nativo ou premissa. A conta nunca é ajustada para bater com etiqueta, quadro ou orçamento.
 3. **Desconhecido não vira zero nem verba.** Cada item termina num estado de [03](references/03_pendencias_premissas_e_estados.md): CONFIRMADO, PREMISSA, SUBTOTAL, PENDENTE ou NÃO APLICÁVEL.
 4. **Critério antes da conta.** Grandeza, unidade, contorno, faces, alturas e vãos vêm do usuário, do contrato ou da composição indicada na planilha; na falta deles, do padrão de [11](references/11_criterios_padrao.md) (precedência em [10](references/10_boas_praticas_e_fontes.md)). O critério aparece no print.
@@ -26,12 +26,14 @@ O resultado é uma planilha conferível: a lista de serviços recebida intacta, 
 |---|---|---|
 | 0. Preparar | Checar ferramentas, inventariar, copiar e fotografar a planilha | [00](references/00_fluxo_mestre.md), [07](references/07_ferramentas_e_aplicativos.md) |
 | 1. Catalogar | Leitura de reconhecimento de todas as fontes | [01](references/01_catalogacao_projetos.md) |
-| 2. Mapear | Abas, itens, natureza, curva ABC, mapa de especificações | [02](references/02_planilha_escopo_e_mapeamento.md) |
+| 2. Mapear | Abas, itens, natureza, mapa de especificações | [02](references/02_planilha_escopo_e_mapeamento.md) |
 | 3. **Checkpoint** | Apresentar o escopo proposto e aguardar confirmação | [00 §3](references/00_fluxo_mestre.md) |
 | 4. Bases | Ambientes, paredes e faces, vãos, forros, pontos | [04](references/04_calculo_de_areas.md), [05](references/05_perimetros_e_alturas.md) |
 | 5. Quantificar | Critério, parcelas, estados e serviços associados | [06](references/06_quantitativos_e_memorias.md), [11](references/11_criterios_padrao.md), [matriz](assets/MATRIZ_SERVICOS_ASSOCIADOS.md) |
 | 6. Gerar | Planilha e prints a partir de `levantamento.json` | [esquema de dados](assets/ESQUEMA_LEVANTAMENTO.md), [esquema da planilha](assets/ESQUEMA_PLANILHA.md) |
 | 7. Conferir e entregar | Validador, razoabilidade, comparação pedida, mensagem final | [08](references/08_conferencia_comparacao_e_entrega.md) |
+
+Cada tarefa roda no modelo fixado em [09 §1](references/09_agentes_retomada_e_revisoes.md): o agente que recebe o pedido orquestra e delega.
 
 Pedidos parciais (só catálogo, só alguns itens, só comparação) executam apenas as etapas necessárias.
 
@@ -42,6 +44,6 @@ Pedidos parciais (só catálogo, só alguns itens, só comparação) executam ap
 | Informação falta ou conflita | [03](references/03_pendencias_premissas_e_estados.md) |
 | Escolher ou justificar a regra de medição | [11](references/11_criterios_padrao.md), [10](references/10_boas_praticas_e_fontes.md) |
 | Operar CAD ou Excel pela interface | [07](references/07_ferramentas_e_aplicativos.md) |
-| Delegar, retomar ou receber nova revisão de projeto | [09](references/09_agentes_retomada_e_revisoes.md) |
+| Delegar (modelo por tarefa), retomar ou receber nova revisão de projeto | [09](references/09_agentes_retomada_e_revisoes.md) |
 
 Os scripts ficam em `scripts/` e rodam com o Python do ambiente da skill (`.venv/bin/python`, quando existir) ou `python3`; `--help` mostra as opções ([07](references/07_ferramentas_e_aplicativos.md)). O guia para pessoas é o [LEIA_PRIMEIRO.md](LEIA_PRIMEIRO.md).

@@ -25,12 +25,14 @@ A geometria fica guardada em parcelas (faces, vãos, retornos separados), para q
 
 | Serviço | Unidade | Regra padrão | Parâmetros |
 |---|---|---|---|
-| Alvenaria, drywall, divisórias | m² | Comprimento pelo eixo, sem sobrepor encontros, × altura do piso à face inferior da laje ou viga (ou à cota de projeto) | ★ Vãos: descontar todos (área líquida) |
+| Alvenaria, drywall, divisórias | m² | Comprimento pelo eixo, sem sobrepor encontros, × altura do piso à face inferior da laje ou viga (ou à cota de projeto) | ★ Vãos: descontar todos (área líquida). Altura: validar no projeto antes de aplicar a referência (ver abaixo) |
 | Demolição de alvenaria ou divisória | m² ou m³ | Geometria existente efetivamente removida | Espessura existente para m³ |
 | Chapisco, emboço, reboco, massa, gesso | m² | Área por face revestida: comprimento da face × altura do revestimento | ★ Vãos: descontar todos; ★ requadros (ombreiras, vergas, peitoris): incluir só se o item ou a composição pedir |
 | Revestimento cerâmico ou pedra em parede | m² | Área por face até a altura especificada | Como o anterior |
 | Pintura de paredes | m² | Área por face pintada, até a altura de pintura (forro, teto ou faixa) | ★ Vãos e requadros: como o revestimento |
 | Verga e contraverga | m | Largura do vão + transpasse de cada lado | Transpasse conforme projeto; sem fonte, PREMISSA |
+
+**Altura de alvenaria, drywall e divisória.** O topo na face inferior da laje ou viga é a referência, e só vale depois de validado no projeto: cortes, detalhes, quadro de tipos de parede e notas podem mostrar outro topo (no forro, acima do forro ou numa cota). Quando o projeto mostra outra altura, vale o projeto, pano a pano, e a memória cita a vista que a comprova. Se o projeto não definir o topo, vale a referência como critério (degrau 3 da escada de [03 §2](03_pendencias_premissas_e_estados.md)): o item não vira premissa nem pendência por isso, e a memória e a observação do item registram que o topo não está indicado. A cota da laje ou da viga continua vindo do projeto; se ela faltar, segue a escada.
 
 Cada face da mesma parede é uma parcela própria, com material, altura e acabamento. Quando o contrato ou a composição adotar outra regra de vãos (por exemplo, não descontar vãos menores que um limite e descontar só o excedente), ela é aplicada sobre as mesmas parcelas de vão.
 

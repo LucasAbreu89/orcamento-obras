@@ -15,7 +15,7 @@
 |---|---|---|
 | 0. Preparar | `ambiente.py` e `preparar_projeto.py` ([07](07_ferramentas_e_aplicativos.md)) | Rotas de leitura definidas; planilha com backup, snapshot e mapa |
 | 1. Catalogar | Leitura de reconhecimento e índice assunto → fonte ([01](01_catalogacao_projetos.md)) | Toda representação está no catálogo com estado de leitura; faltas listadas |
-| 2. Mapear | Abas, listas, natureza dos itens, curva ABC, mapa de especificações ([02](02_planilha_escopo_e_mapeamento.md)) | Todo item tem chave, natureza e fonte provável |
+| 2. Mapear | Abas, listas, natureza dos itens, mapa de especificações ([02](02_planilha_escopo_e_mapeamento.md)) | Todo item tem chave, natureza e fonte provável |
 | 3. Checkpoint | Apresentar o escopo proposto (§3) | Escopo confirmado, ou registrado como premissa de escopo |
 | 4. Bases | Ambientes, paredes e faces, vãos, forros, pontos, equipamentos ([04](04_calculo_de_areas.md), [05](05_perimetros_e_alturas.md)) | Cada base tem contorno ou IDs, método e origem |
 | 5. Quantificar | Critério ([11](11_criterios_padrao.md)), parcelas, estados ([03](03_pendencias_premissas_e_estados.md)), serviços associados ([06](06_quantitativos_e_memorias.md)) | Todo item tem estado, parcelas ou motivo, e evidência ou justificativa |
@@ -34,7 +34,6 @@ Depois das etapas 1 e 2, e antes de medir, enviar **uma** mensagem com:
 4. Disciplinas cobertas e não cobertas (por exemplo, instalações sem projeto).
 5. Critérios de maior impacto, marcados com ★ em [11](11_criterios_padrao.md), o nível de premissas e o limite de 10% para premissa ([03 §2](03_pendencias_premissas_e_estados.md)).
 6. Se houver comparação pedida, a quantidade de referência e o limite de 5% para investigar diferenças ([08 §4](08_conferencia_comparacao_e_entrega.md)).
-7. Ordem do trabalho pela curva ABC, quando houver preços.
 
 Depois, aguardar a resposta.
 
@@ -43,7 +42,6 @@ Seguir sem esperar quando o pedido já definir abas, disciplinas e critérios, q
 ## 4. Ordem de trabalho
 
 - **Por elemento, depois por item.** Medir uma vez as bases (ambientes, trechos de parede com faces e alturas, vãos do quadro de esquadrias, forros, pontos, equipamentos) e apropriar cada item como filtro e fórmula sobre elas. Uma correção na base chega a todos os itens que a usam.
-- **Curva A primeiro.** Os itens de maior valor recebem medição mais cuidadosa e segunda medição por outro caminho ([08 §2](08_conferencia_comparacao_e_entrega.md)).
 - **Serviços associados.** Ao fechar cada família, passar a [matriz](../assets/MATRIZ_SERVICOS_ASSOCIADOS.md) para achar omissões na lista; o que faltar vai para o campo `sugestoes` do JSON (aba Sugestões), fora da principal.
 - **Critério registrado uma vez por família** na aba Critérios; os itens apontam para ele.
 
@@ -53,7 +51,7 @@ Seguir sem esperar quando o pedido já definir abas, disciplinas e critérios, q
 
 **Construção nova:** conferir a cobertura das disciplinas (terreno, fundações, estrutura, vedações, cobertura, impermeabilização, acabamentos, instalações, equipamentos, áreas externas). Cada sistema é medido pelo seu projeto; arquitetura não substitui estrutura, fundações ou instalações. Sem o projeto da disciplina, o item fica pendente ou recebe estimativa autorizada, identificada como tal.
 
-Preço só entra quando pedido, e a quantidade fica separada dele.
+Preços e quantidades já preenchidas na planilha são ignorados, salvo comparação pedida ([02 §4](02_planilha_escopo_e_mapeamento.md)).
 
 ## 6. Pastas da execução
 

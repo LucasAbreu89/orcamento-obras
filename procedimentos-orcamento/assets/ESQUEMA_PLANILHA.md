@@ -23,7 +23,7 @@ Nome: `ITEM ` + ID, sem `[ ] : * ? / \`, com até 31 caracteres; um código repe
 |---|---|
 | A1 | título |
 | B3, B4, B5, B6 | ID, descrição integral, unidade, chave (`aba!linha`) |
-| B8 a B12 | critério, premissas, pendências, fontes, natureza e curva ABC |
+| B8 a B12 | critério, premissas, pendências, fontes e natureza |
 | **G8** | **resultado**: o subtotal (G10) quando o estado efetivo é CONFIRMADO ou PREMISSA; vazio nos demais |
 | **G9** | **estado efetivo**: o declarado (G13), rebaixado para SUBTOTAL se alguma parcela estiver sem valor |
 | G10 | subtotal conhecido: soma das parcelas com valor |

@@ -1,15 +1,30 @@
-# 09 — Agentes, retomada e revisões de projeto
+# 09 — Agentes, modelos, retomada e revisões de projeto
 
-## 1. Quando delegar
+## 1. Agentes e modelos por tarefa
 
-Padrão: um agente só. Cada subagente relê contexto e fontes; vale a pena quando o ganho é claro:
-- contagem volumosa e independente (por exemplo, uma família de luminárias em todas as vistas);
-- segunda medição, sem acesso à primeira, dos itens curva A;
-- verificação independente de uma entrega já gerada.
+O agente que recebe o pedido é o **orquestrador**. Ele executa a primeira linha da tabela e delega as demais a subagentes criados com o modelo e o effort indicados. O Claude Fable não é usado.
+
+| Tarefa | Nível | OpenAI | Anthropic |
+|---|---|---|---|
+| Orquestrar: escopo e checkpoint, critérios, premissa × pendência, integração do `levantamento.json`, geração, recálculo e validação da planilha com a correção dos erros apontados, conferência física ([08 §2](08_conferencia_comparacao_e_entrega.md)), operação de CAD ou Excel pela interface ([07 §3](07_ferramentas_e_aplicativos.md)) e mensagem final | topo | `gpt-6.1-sol` | `claude-opus-5-5` |
+| Medir geometria e quantificar (etapas 4 e 5): áreas, comprimentos, alturas, faces, vãos, volumes, percursos | topo | `gpt-6.1-sol` | `claude-opus-5-5` |
+| Segunda medição independente, sem acesso à primeira, quando a conferência pedir ([08 §2](08_conferencia_comparacao_e_entrega.md)) | topo | `gpt-6.1-sol` | `claude-opus-5-5` |
+| Catalogar as fontes (etapa 1) | médio | `gpt-6.1-terra` | `claude-sonnet-5-5` |
+| Mapear a planilha (etapa 2) | médio | `gpt-6.1-terra` | `claude-sonnet-5-5` |
+| Contar peças por blocos, símbolos ou quadros: pontos, louças, luminárias, equipamentos, esquadrias | médio | `gpt-6.1-terra` | `claude-sonnet-5-5` |
+| Revisar a entrega gerada: prints e memórias ([08 §5](08_conferencia_comparacao_e_entrega.md)) | médio | `gpt-6.1-terra` | `claude-sonnet-5-5` |
+| Operar scripts em lote: preparação, conversões, inventários, extrações e renderização de prints já definidos | leve | `gpt-6-luna` | `claude-haiku-5-5` |
+
+Effort por nível: topo, `ultra` na OpenAI e `xhigh` na Anthropic; médio, `high`; leve, `medium`. Para trocar um modelo, muda-se só esta tabela. Vale a coluna do fornecedor em que a chamada está rodando. Os nomes seguem o catálogo de cada fornecedor: o leve da OpenAI é `gpt-6-luna`, sem versão 6.1.
+
+- **Modelo da chamada.** A chamada começa no modelo de topo. Se começar em outro, o agente segue como orquestrador e registra isso em `limitacoes`.
+- **Contexto novo.** O subagente recebe o pedido completo e não herda a conversa do orquestrador: modelos diferentes não compartilham cache, e conversa herdada é relida a cada chamada. No Codex, `spawn_agent` com `model` e `reasoning_effort`, sem `fork_turns`; no Claude Code, agente novo com `model`, nunca `fork`.
+- **Segunda medição.** Quando o ambiente dá acesso aos dois fornecedores, ela usa o que não fez a primeira.
+- **Sem ferramenta de subagentes**, o agente executa todas as tarefas no modelo da chamada e registra isso em `limitacoes`.
 
 O pedido ao subagente traz: objetivo e alcance, fontes e revisões, critério, prefixo de IDs, pasta de saída própria e formato de retorno (parcelas com origem, evidências, pendências). Nunca uma meta numérica. Subagente não grava a planilha nem o `levantamento.json` e não opera a interface.
 
-**Um autor** grava o `levantamento.json` e a planilha; **um operador** usa a interface. Ao integrar, o autor confere duplicações pela identidade física (local, família, face, estado), não só pelo prefixo do ID.
+O orquestrador é o único autor do `levantamento.json` e da planilha e o único operador da interface. Ao integrar, ele confere duplicações pela identidade física (local, família, face, estado), não só pelo prefixo do ID.
 
 ## 2. Retomada
 

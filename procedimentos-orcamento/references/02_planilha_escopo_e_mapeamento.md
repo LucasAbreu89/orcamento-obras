@@ -27,9 +27,9 @@
 
 Agrupadores e títulos não entram no `levantamento.json`. Unidade `VB` com quantidade 1 só representa pacote definido; desconhecido não vira verba.
 
-## 4. Curva ABC
+## 4. Preços e quantidades recebidas
 
-Se a planilha tiver preço unitário, calcular quantidade recebida × preço apenas para ordenar: A até cerca de 80% do valor acumulado, B até cerca de 95%, C o restante. Essa conta não alimenta nenhuma memória. Sem preços, ordenar pela relevância típica da família ou dispensar a curva. Ela define a ordem do trabalho, a profundidade da conferência ([08 §2](08_conferencia_comparacao_e_entrega.md)) e o limite entre premissa e pendência ([03 §2](03_pendencias_premissas_e_estados.md)).
+Não há curva ABC. Preços e quantidades já preenchidas na planilha são ignorados: não ordenam o trabalho, não entram em memória, não servem de conferência e não indicam que o serviço existe na obra. A planilha pode ser um modelo padrão, com valores de outra obra. As colunas ficam intactas (§1) e só são lidas se o usuário pedir uma comparação ([08 §4](08_conferencia_comparacao_e_entrega.md)).
 
 ## 5. Mapa de especificações
 

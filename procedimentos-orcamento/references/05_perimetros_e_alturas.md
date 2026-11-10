@@ -39,7 +39,7 @@ Toda altura tem referência inferior, referência superior, estado da obra e ser
 | Laje | face inferior ou superior; espessura documentada para converter entre elas |
 | Vigas | face inferior, largura e trecho afetado |
 | Rebaixos, sancas, cortineiros | zona e superfícies próprias |
-| Topo de parede ou divisória | até forro, laje, viga ou cota indicada |
+| Topo de parede ou divisória | até forro, laje, viga ou cota indicada; validar no projeto antes de aplicar a referência de [11](11_criterios_padrao.md) (laje ou viga) |
 | Peitoril, verga, faixas | referência da abertura e limites de cada faixa |
 
 `H = N_superior − N_inferior` só no mesmo datum; altura negativa indica referências incompatíveis. Pé-direito até o forro, pé-direito até a laje e entreforro são grandezas diferentes. Altura existente (para demolição) e proposta (para execução) ficam separadas.

@@ -27,7 +27,7 @@ Erro do validador é corrigido antes da entrega, ou o item e a limitação são 
 
 O validador prova consistência, não que o universo físico esteja completo. Para cada família:
 - escopo, estado físico, faces e alturas, vãos e interfaces, duplicações (vistas repetidas, legendas, faces), exclusões justificadas;
-- **itens curva A:** segunda medição por outro caminho (envelope × decomposição, coordenadas × cotas, contagem por ambiente × por família, comando nativo);
+- **segunda medição por outro caminho** (envelope × decomposição, coordenadas × cotas, contagem por ambiente × por família, comando nativo) quando um teste de razoabilidade (§3) acusar diferença sem explicação;
 - serviços associados, pela [matriz](../assets/MATRIZ_SERVICOS_ASSOCIADOS.md).
 
 ## 3. Testes de razoabilidade
@@ -52,7 +52,7 @@ Só quando o usuário pedir. A coluna de quantidade recebida existe em quase tod
 1. Mapear por chave, ID, descrição e unidade; identificar a coluna de referência pelo cabeçalho e pela fórmula.
 2. Classificar cada par: **comparável**; **comparável com ressalva** (critério incerto); **não comparável** (escopo, unidade, estado ou subtotal contra total); **sem correspondência**.
 3. Calcular só nos comparáveis: `Δ = Q_levantada − Q_referência` e `Δ% = Δ ÷ Q_referência × 100` (base zero: "não calculável").
-4. Investigar quando `|Δ%|` passar do limite combinado no checkpoint (padrão: 5%) ou o item for curva A. Separar fato demonstrado, hipótese e informação ausente; nunca afirmar erro da outra fonte sem prova.
+4. Investigar quando `|Δ%|` passar do limite combinado no checkpoint (padrão: 5%). Separar fato demonstrado, hipótese e informação ausente; nunca afirmar erro da outra fonte sem prova.
 5. A referência nunca é corrigida para coincidir. Nossas correções vão para o `levantamento.json`, com antes, depois e motivo.
 
 Igualdade numérica, inclusive `1 VB`, não prova igualdade de escopo.
