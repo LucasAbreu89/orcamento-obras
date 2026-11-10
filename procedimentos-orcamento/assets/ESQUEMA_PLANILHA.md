@@ -1,68 +1,85 @@
-# Esquema adaptável da planilha de levantamento
+# Esquema da planilha de entrega
 
-Este é um modelo de campos, não uma exigência de refazer o layout existente. Não é uma planilha calculada. O agente cria/adapta o arquivo real seguindo a habilidade de planilhas disponível e os procedimentos técnicos.
+Gerada por `gerar_planilha.py` a partir de `levantamento.json` ([ESQUEMA_LEVANTAMENTO](ESQUEMA_LEVANTAMENTO.md)). As fórmulas aparecem abaixo como o Excel em português as exibe; o arquivo as guarda em inglês.
 
-## Principal
+## 1. Listas recebidas (principais)
 
-| Campo | Tipo e regra |
+Nenhuma célula existente é alterada. À direita do conteúdo da aba, na linha de cabeçalho da lista, entram quatro colunas:
+
+| Coluna | Conteúdo |
 |---|---|
-| Item | Texto original; conservar zeros, subitens e ordem |
-| Serviço | Descrição integral recebida |
-| Unidade | Unidade original; conversões só com justificativa |
-| Quantidade recebida | Preservar nome, valores, fórmulas e vazios originais; não substituir pelo novo levantamento |
-| QTD LEVANTADA | Coluna própria, com fórmula para o resultado de nossa memória independente; estado explícito se incompleta |
-| Estado | CONFIRMADO, ESTIMATIVA, SUBTOTAL, PENDENTE ou NÃO APLICÁVEL |
-| Memória | Nome da aba/célula e link funcional quando suportado |
-| Observação / dúvidas | Explicação curta e IDs da aba Pendências |
+| `QTD LEVANTADA` | `=SE('ITEM 2.1'!$G$8="";"";'ITEM 2.1'!$G$8)`, vazia quando o item não tem total |
+| `ESTADO` | `='ITEM 2.1'!$G$9` |
+| `MEMÓRIA` | link para a aba da memória |
+| `OBS LEVANTAMENTO` | motivo curto, com IDs `D###`/`P###` |
 
-Se a comparação foi solicitada: `QTD <fonte de terceiro>`, `Diferença absoluta`, `Diferença %`, `Comparável?`, `Explicação da diferença`. Guardar os números de terceiro como transcrições de sua coluna correta, com fonte. Percentual deve ter denominador declarado; base zero ou alcance incompatível não gera percentual enganoso.
+Só as linhas de itens recebem as colunas; títulos e agrupadores ficam vazios. As colunas de quantidade recebidas continuam como estavam, inclusive fórmulas e vazios.
 
-Uma planilha pode conter várias principais/listas. Inventariar todas as abas, inclusive ocultas; identificar função, tabelas/intervalos, alcance examinado e relação entre resumo, fonte, memória, revisão e lista independente. Não adotar automaticamente a aba ativa e não somar resumos às parcelas que já os alimentam.
+## 2. Aba de memória `ITEM <id>`
 
-Mapa de abas: `arquivo | aba | visibilidade | função | tabelas/intervalos | pavimento/setor/fase/revisão | relações/dependências | cobertura | inclusão/exclusão/pendência e motivo`.
+Nome: `ITEM ` + ID, sem `[ ] : * ? / \`, com até 31 caracteres; um código repetido recebe o sufixo ` (2)`. O mapa chave → aba fica no Resumo.
 
-Mapa de itens: `chave arquivo+aba+tabela/seção+item/linha | ID original | descrição | unidade | célula de quantidade original | célula QTD LEVANTADA | memória/resultado | estado`. Distinguir códigos repetidos sem alterar o ID recebido. As quantidades originais não dispensam medir e não alimentam nossa memória como atalho. Conservar também as fórmulas originais de custos/totais, sem redirecioná-las para nossa coluna por conta própria.
+| Célula | Conteúdo |
+|---|---|
+| A1 | título |
+| B3, B4, B5, B6 | ID, descrição integral, unidade, chave (`aba!linha`) |
+| B8 a B12 | critério, premissas, pendências, fontes, natureza e curva ABC |
+| **G8** | **resultado**: o subtotal (G10) quando o estado efetivo é CONFIRMADO ou PREMISSA; vazio nos demais |
+| **G9** | **estado efetivo**: o declarado (G13), rebaixado para SUBTOTAL se alguma parcela estiver sem valor |
+| G10 | subtotal conhecido: soma das parcelas com valor |
+| G11 | unidade |
+| G12 | número de parcelas sem valor |
+| G13 | estado declarado no `levantamento.json` |
+| B14, B15, B16 | o que entrou, o que ficou fora, o que falta |
+| linha 18 | cabeçalho das parcelas; parcelas a partir da linha 19 |
 
-## Bases de ambientes/elementos
+Fórmulas do bloco de resultado:
 
-| Campos essenciais |
-|---|
-| ID, nome, pavimento/setor, estado físico, fonte/revisão/vista |
-| Área indicada no projeto, área calculada e método em campos distintos |
-| Contorno, parcelas, vãos e critério de atribuição das soleiras |
-| Perímetro geométrico e comprimento efetivo do serviço em campos distintos |
-| Altura de forro, altura até laje, cota absoluta/referência de nível e zonas |
-| Elementos/trechos/faces, IDs e vínculos às evidências |
-| Critério, estado, dúvidas e dependências |
+```text
+G8  =SE(OU(G9="CONFIRMADO";G9="PREMISSA");G10;"")
+G9  =SE(E(OU(G13="CONFIRMADO";G13="PREMISSA");G12>0);"SUBTOTAL";G13)
+G10 =SE(CONT.NÚM(K19:K30)=0;"";SOMA(K19:K30))
+G12 =LINS(K19:K30)-CONT.NÚM(K19:K30)
+```
 
-Não pressupor uma única altura ou um mesmo contorno para todos os serviços do ambiente.
+Tabela de parcelas:
 
-## Memória por item
+| Coluna | Campo |
+|---|---|
+| A | ID da parcela |
+| B | descrição |
+| C | local ou face |
+| D | estado físico |
+| E, F, G | dimensões 1 a 3 |
+| H | valor direto |
+| I | multiplicidade |
+| J | sinal (1 ou −1) |
+| K | resultado: `=SE(CONT.NÚM(E19:F19)<2;"";E19*F19*I19*J19)` para duas dimensões (ajustado a 1 ou 3) ou `=SE(CONT.NÚM(H19)<1;"";H19*I19*J19)` para valor direto |
+| L | unidade |
+| M | origem |
+| N | fonte ou localizador |
+| O | premissas e pendências da parcela |
 
-Cabeçalho: ID original, descrição, unidade, estado físico, alcance, critério, fontes, resultado e estado. Preferir resultado em endereço padronizado quando possível, mantendo mapa explícito; `G8` é uma convenção possível, não obrigatória.
+Depois das parcelas vêm o diagnóstico (quando houver) e os prints, cada um com sua legenda.
 
-Tabela de parcelas: `ID | ambiente/elemento/face | fonte/vista | origem do dado | dimensões | unidade | fórmula | multiplicidade | acréscimo/desconto | resultado | estado`.
+## 3. Abas do levantamento
 
-Incorporar prints reais marcados, legíveis e correspondentes a todas as áreas, faces, trechos ou ocorrências considerados. Mostrar inclusões/deduções e, para exclusão ou pendência, destacar a indicação ou a informação faltante nas fontes. Registrar por item quais imagens cobrem quais parcelas, com verificação de legibilidade, ou o motivo de não haver representação gráfica aplicável. Explicar junto à conta o que entrou, o que ficou fora e o que falta. Arquivo/hash ou imagem genérica sem vínculo não atendem à auditoria. Manter subtotal, ajustes e total separados. O resultado final verifica todas as dependências essenciais. Usar o [modelo de memória](MODELO_MEMORIA_SERVICO.md) e o [contrato de evidência visual](../references/06_quantitativos_e_memorias.md#evidencias-visuais-por-item).
+| Aba | Conteúdo |
+|---|---|
+| Pendências | campos de [03 §4](../references/03_pendencias_premissas_e_estados.md), ordenados por impacto |
+| Premissas | campos de [03 §3](../references/03_pendencias_premissas_e_estados.md), incluindo premissas de escopo |
+| Critérios | ID, família, regra, parâmetros e fonte |
+| Fontes | ID, arquivo, revisão, hash, representações e estado de leitura |
+| Sugestões | serviços que faltam na lista (campo `sugestoes`), fora da principal; só existe se houver sugestão |
+| Comparação | quantidade levantada × referência, classe, Δ e Δ% (campo `comparacao`); só existe quando pedida |
+| Resumo do levantamento | contagem por estado, mapa chave → aba de memória, modo de gravação e limitações (campo `limitacoes`) |
 
-Relatório de diagnóstico em cada memória: `descrição integral/escopo | constatação no projeto | problemas/categorias | evidências | soluções | base da resolução | estado por problema | informação específica faltante | impacto quantitativo | ressalva de execução | ação de revisão`. A consolidação central é complementar. Distinguir resolução demonstrada, viabilidade orçamentária por premissa e definição executiva pendente, conforme seção 7 da referência 06.
+Se o arquivo já tiver uma aba com o mesmo nome, a nova recebe o sufixo ` (levantamento)`.
 
-## Pendências
+## 4. Tipos e valores
 
-`ID | natureza | item(s) | ambiente/elemento | dúvida | fonte/revisão/vista consultada | evidência | dado necessário | parcela comprovada | alternativa/hipótese autorizada | impacto ou não determinado | células/dependências | estado | resolução/origem/data`.
+Quantidades e dimensões são números nativos; a vírgula decimal é formato de exibição. IDs são texto. As fórmulas são gravadas com os valores já calculados (cache), para que visualizadores sem motor de cálculo mostrem os números; o validador confere esses valores contra o JSON e contra o LibreOffice.
 
-A principal e a memória exibem o estado junto ao valor. Comentários complementam, mas não substituem esta aba. Campos numéricos desconhecidos não recebem zero fictício.
+## 5. Arquivo separado
 
-## Fontes
-
-`ID | caminho | hash quando disponível | revisão | ID da representação | prancha/página ou Model/região ou layout/viewport | vista | layers/estado de visibilidade pertinente | cobertura examinada | método de leitura/medição | arquivo de evidência | limitações`.
-
-## Registro técnico de aplicativos
-
-Em dados técnicos da execução, manter `aplicativo | documento/caminho/ID | já estava aberto? | aberto pela tarefa? | original/cópia | alterações da tarefa | salvo em | evidência | fechado? | limitação`.
-
-Esse registro serve à preservação e ao fechamento correto dos documentos, sem capturar conteúdo alheio ao trabalho. Não é uma lista Markdown de tarefas ou memória de sessão.
-
-## Tipos e validação
-
-Quantidades são números nativos; unidades e observações são campos próprios. Exibição brasileira é formatação/localidade. Fórmulas de subtotal não comprovam completude: testar entradas e estados essenciais antes do resultado final. A entrega deve ser salva e reaberta, com verificação real de valores, vínculos, imagens e recursos preservados.
+Se o arquivo recebido tiver recursos que a gravação perderia (imagens, gráficos, controles, objetos incorporados, extensões), o modo `auto` cria `<nome>_LEVANTAMENTO.xlsx`. Cada lista vira uma aba `<aba> (cópia)` (`(cópia 2)` para a segunda lista da mesma aba) com o bloco da lista copiado como valores, agrupadores incluídos: colunas item, descrição, unidade e quantidade recebida, as colunas do §1 nas linhas de itens e `LINHA ORIGINAL`. Seguem as memórias e as abas do §3. O arquivo recebido fica intocado (o validador confere o hash) e o motivo vai para o Resumo. Arquivo `.xlsm` vira `.xlsx` nesse modo.

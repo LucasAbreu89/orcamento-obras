@@ -20,4 +20,5 @@
 .DS_Store
 acad.err
 __pycache__/
+.venv/
 *.py[cod]

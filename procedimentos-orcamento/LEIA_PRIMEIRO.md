@@ -1,79 +1,75 @@
-# Procedimento reutilizável para levantamento de obras
+# Levantamento de quantitativos: guia de uso
 
-Esta pasta contém uma **skill local do Codex**, procedimentos técnicos e modelos para transformar uma pasta de projetos e uma lista de serviços em quantitativos com memória de cálculo. O mesmo fluxo atende reforma e construção nova, conforme as disciplinas e informações disponíveis.
+Esta pasta é uma skill para agentes (Codex e compatíveis) que transforma uma pasta de projetos e uma planilha de serviços em quantitativos com memória de cálculo. Serve para reforma e construção nova, em qualquer disciplina, desde que os projetos estejam acessíveis.
 
-## Como pedir uma nova execução
+## Preparação única do computador
 
-Envie uma mensagem como esta, substituindo os dois caminhos:
+As bibliotecas ficam num ambiente virtual dentro da skill (o Python do Homebrew e de várias distribuições não aceita `pip install` direto no sistema):
+
+```bash
+python3 -m venv procedimentos-orcamento/.venv
+```
+
+```bash
+procedimentos-orcamento/.venv/bin/python -m pip install -r procedimentos-orcamento/scripts/requirements.txt
+```
+
+Com o ambiente criado, o agente roda os scripts com `procedimentos-orcamento/.venv/bin/python`.
+
+Também recomendados:
+- **ODA File Converter** (gratuito, Open Design Alliance): converte DWG em DXF sem abrir o CAD. Sem ele, o agente usa um CAD instalado pela interface ou pede DXF/PDF.
+- **LibreOffice**: recálculo independente da planilha entregue e conversão de XLS/ODS.
+
+Para conferir o que está disponível: `python3 procedimentos-orcamento/scripts/ambiente.py`. Para testar o kit com arquivos sintéticos (os testes que dependem de uma biblioteca ausente são pulados):
+
+```bash
+procedimentos-orcamento/.venv/bin/python -m unittest discover -s procedimentos-orcamento/scripts/tests
+```
+
+IFC: o kit não traz leitor de IFC. Com modelo IFC, o agente usa uma ferramenta IFC instalada (por exemplo, IfcOpenShell) ou pede DWG, PDF ou os quantitativos exportados do modelo.
+
+## Como pedir
 
 ```text
 Use $procedimentos-orcamento.
-Projetos: /caminho/da/obra
+Projetos: /caminho/da/obra/projetos
 Planilha de serviços: /caminho/da/obra/servicos.xlsx
-
-Faça o levantamento dos itens da planilha, com memória por item,
-imagens reais dos projetos marcadas e fórmulas na principal.
-Registre dúvidas na planilha e continue o restante.
 ```
 
-Também é possível indicar diretamente o arquivo `SKILL.md` desta pasta se a skill ainda não aparecer no seletor da sessão. Para uma tarefa menor, informe o alcance: por exemplo, apenas catalogar os documentos, medir os ambientes ou comparar os itens 1 a 10. Não é necessário preencher os modelos manualmente.
+Para um pedido menor, diga o alcance: "só catalogar", "só os itens 3.1 a 3.8", "só comparar com a coluna do empreiteiro".
 
-Neste workspace, a skill está registrada por um link em `.agents/skills/procedimentos-orcamento`, apontando para esta pasta. Há uma única cópia dos procedimentos. O registro é local a esta árvore de projetos; não foi feita instalação global.
+## O que acontece
 
-Projetos e planilhas podem estar em qualquer pasta acessível ao agente. Cada obra conserva suas próprias fontes, evidências, decisões e entregas. Não reutilizar números da LCA em outra obra. Para um projeto fora deste workspace, indicar o caminho completo desta skill ou disponibilizar a pasta como skill naquele ambiente.
+1. O agente checa as ferramentas, inventaria os arquivos, faz backup e uma "fotografia" da planilha.
+2. Lê todos os projetos (todas as pranchas, layouts e camadas) e monta um catálogo.
+3. Mapeia todas as abas da planilha, classifica os itens e liga cada um à especificação do projeto.
+4. **Para e mostra o escopo proposto**: abas e itens que vai levantar, disciplinas cobertas, itens que são custo indireto, critérios de maior impacto e documentos faltantes. Você confirma ou corrige numa resposta. (Se o pedido já disser tudo isso, ele segue direto e registra as escolhas como premissas.)
+5. Mede por elemento (ambientes, paredes, vãos, forros, pontos) e apropria cada item, começando pelos de maior valor.
+6. Gera a planilha de entrega e os prints marcados a partir de um arquivo de dados único.
+7. Valida tudo por script (originais intactos, vínculos, estados, prints, valores recalculados) e entrega.
 
-## O que acontece, em ordem
+## O que você recebe
 
-1. Identificar a pasta e o Excel corretos, preservar os originais, registrar as fontes e os documentos já abertos nos aplicativos.
-2. Examinar os projetos e criar um catálogo: conteúdo de cada arquivo, revisão, plantas e vistas, inclusive regiões do Model, layouts e combinações pertinentes de camadas. Registrar o que foi examinado e onde encontrar cada informação.
-3. Abrir a planilha e mapear todas as abas/listas. Preservar as quantidades recebidas, reconhecer itens, unidades e fórmulas, e definir os critérios de medição por serviço. Números já preenchidos não dispensam o levantamento independente.
-4. Levantar as bases necessárias de ambientes: áreas, perímetros, alturas e elementos. Auditar vãos, faces e interfaces.
-5. Quantificar cada serviço, produzir sua memória com imagem marcada, parcelas, fontes e fórmulas, e criar a coluna própria `QTD LEVANTADA`, vinculada ao resultado nas abas de origem. Manter a coluna original para eventual comparação.
-6. Conferir cobertura, unidades, duplicações, fórmulas e resultados. Se houver uma base de terceiro, comparar alcances compatíveis e investigar divergências.
-7. Salvar, recalcular e reabrir a planilha, verificar as imagens e a leitura dos valores, fechar os documentos abertos pelo trabalho e entregar os links.
+- A planilha recebida, sem nenhuma célula alterada, com as colunas `QTD LEVANTADA`, `ESTADO`, `MEMÓRIA` e `OBS LEVANTAMENTO`.
+- Uma aba de memória por item: critério, parcelas com fórmulas, print do projeto com as parcelas marcadas e o texto "o que entrou / o que ficou fora / o que falta".
+- **Pendências**: perguntas prontas para enviar ao projetista ou ao cliente, ordenadas por impacto.
+- **Premissas**: valores adotados quando o projeto não dizia, com a justificativa e como confirmar.
+- **Sugestões**: serviços que o projeto pede e a lista não tem (fora da principal).
+- **Comparação**, quando você pedir: quantidade levantada × referência, com a diferença explicada.
+- **Critérios**, **Fontes** e **Resumo** (com as limitações do que não pôde ser verificado).
 
-As regras completas e os critérios de passagem de cada etapa estão em [00 — Fluxo mestre](references/00_fluxo_mestre.md). O índice técnico está no [SKILL.md](SKILL.md).
+Estados de cada item: **CONFIRMADO** (tudo veio do projeto), **PREMISSA** (depende de um valor adotado e listado), **SUBTOTAL** (parte medida, falta parte), **PENDENTE** (falta informação), **NÃO APLICÁVEL** (fora do levantamento, com motivo). Nada desconhecido aparece como zero.
 
-## Quando faltar uma informação
+## Como personalizar
 
-A execução continua nos itens independentes. A aba `Pendências` registra a dúvida, o item, o projeto/vista a consultar, a informação necessária e o efeito sobre a conta. A principal e a memória mostram se o resultado é completo, estimado, subtotal ou pendente. Não há preenchimento fictício de zero para fazer a planilha parecer completa.
+- **Critérios de medição:** o padrão está em [references/11_criterios_padrao.md](references/11_criterios_padrao.md). Para mudar o padrão da empresa, edite esse arquivo; para uma obra só, diga no pedido ou no checkpoint (ex.: "não descontar vãos até 2 m²").
+- **Nível de premissas:** `conservador` (só o que está no projeto), `padrão` ou `amplo` (adota valores usuais sempre que possível).
+- **Limite para investigar diferenças** numa comparação (padrão: 5%).
 
-O trabalho pode terminar como **entrega com pendências**: todas as partes possíveis foram feitas, e o restante está localizado para resolução posterior. A continuidade não significa que o agente possa operar sem permissões, medir sem ferramentas ou continuar trabalhando depois do encerramento da sessão por conta própria.
+## Onde ficam os arquivos
 
-## Organização das saídas
+Cada execução cria `levantamento-orcamento/execucoes/AAAAMMDD_HHMMSS/` dentro da obra, com as pastas `fontes`, `dados`, `evidencias`, `planilha` e `conferencia`. Os projetos e a planilha originais nunca são alterados nem movidos.
 
-Por padrão, a execução cria uma pasta dentro da obra:
+## Instalação da skill
 
-```text
-levantamento-orcamento/execucoes/<data_hora>/
-  01_catalogo/          conteúdo e índice das fontes
-  02_bases_ambientes/   medidas e elementos dos ambientes
-  03_memorias_servicos/ dados e memórias por item
-  04_evidencias/        recortes reais e marcações
-  05_planilhas/         arquivo de trabalho e entrega
-  06_conferencia/       comparação e validação técnica
-  07_backups/           cópias dos arquivos recebidos
-  08_dados_tecnicos/    inventário, critérios e dependências
-```
-
-A planilha final contém a principal preservada, memórias por item, bases utilizadas, fontes e pendências. Os modelos são adaptáveis: não é necessário remodelar uma planilha boa apenas para imitar um layout.
-
-## Preparação opcional por script
-
-O agente pode executar, com Python 3, o auxiliar desta pasta:
-
-```bash
-python3 scripts/preparar_projeto.py --projeto "/caminho/da/obra" --planilha "/caminho/servicos.xlsx"
-```
-
-Esse comando inventaria arquivos, registra hashes e cria cópias da planilha. Ele **não calcula quantitativos**, não verifica células e não controla CAD. Essas atividades seguem os procedimentos e usam as ferramentas disponíveis na sessão. A planilha copiada inicialmente é apenas uma base de trabalho.
-
-## Computer use e fechamento de arquivos
-
-Ao usar CAD, PDF ou Excel, o agente identifica o documento, opera em cópias quando houver alterações de conferência, salva e fecha o que abriu assim que concluir o uso. Mantém os documentos que você já tinha abertos e não descarta alterações suas. No fim pode deixar somente a entrega aberta para revisão, se isso for útil.
-
-## Pesquisa incorporada
-
-As referências incluem TCU, CAIXA/SINAPI, RICS e buildingSMART. Elas ajudam a definir rastreabilidade, cobertura e critérios; não impõem automaticamente a uma obra privada regras de contratação pública ou convenções britânicas. As fontes, edições, locais de consulta e limitações de acesso estão em [10 — Boas práticas e fontes](references/10_boas_praticas_e_fontes.md).
-
-Esta pasta é um pacote de skill portátil; não depende de publicar um plugin ou instalar um aplicativo CAD novo. A descoberta local por `.agents/skills` e os links simbólicos são documentados pelo [guia oficial de skills](https://learn.chatgpt.com/docs/build-skills). A disponibilidade dos aplicativos e ferramentas deve ser conferida em cada execução.
+Neste workspace, a skill está registrada por um link em `.agents/skills/procedimentos-orcamento` que aponta para esta pasta. Para usar em outro projeto, indique o caminho do `SKILL.md` ou disponibilize a pasta como skill naquele ambiente.

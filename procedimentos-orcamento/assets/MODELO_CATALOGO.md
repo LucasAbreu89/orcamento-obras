@@ -1,42 +1,27 @@
-# Catálogo técnico — {{OBRA}}
+# Catálogo das fontes — {{OBRA}}
 
-Data da consulta: {{DATA}}. Pasta de origem: {{PASTA_PROJETO}}.
+Data da leitura: {{DATA}}. Pasta: {{PASTA_PROJETOS}}. Arquivos apenas inventariados continuam marcados como não examinados.
 
-Este documento registra conteúdo examinado. Arquivos apenas inventariados permanecem identificados como não examinados. Não reutilizar os campos de exemplo como informação da obra.
+## Representações
 
-## Índice das fontes
+Uma linha por página, prancha, layout, região do Model ou vista, inclusive as ainda não examinadas.
 
-| ID | Arquivo/link | Disciplina | Revisão do carimbo | Pavimento/fase | Cobertura examinada | Estado da leitura |
-|---|---|---|---|---|---|---|
-| {{FONTE_ID}} | {{CAMINHO}} | {{DISCIPLINA}} | {{REVISAO_OU_NAO_IDENTIFICADA}} | {{LOCAL_FASE}} | {{PAGINAS_LAYOUTS}} | {{EXAMINADO_PARCIAL_NAO_EXAMINADO}} |
+| ID | Arquivo e revisão | Título e conteúdo | Disciplina, pavimento, fase | Localizador | Escala e unidade validada | Leitura | Serve para |
+|---|---|---|---|---|---|---|---|
+| F001.V01 | {{ARQUIVO}} {{REVISAO}} | {{TITULO_E_O_QUE_MOSTRA}} | {{DISCIPLINA_PAVIMENTO_FASE}} | {{PAGINA_LAYOUT_OU_REGIAO_DO_MODEL_E_CAMADAS}} | {{ESCALA_K_OU_NAO_VALIDADA}} | {{NAO_EXAMINADA_PARCIAL_EXAMINADA_FORA_DO_ESCOPO_E_MOTIVO}} | {{ITENS_OU_FAMILIAS}} |
 
-## {{FONTE_ID}} — {{ARQUIVO}}
+## Quadros e especificações
 
-- Identidade: {{CAMINHO_RELATIVO}}, {{HASH_SE_DISPONIVEL}}, {{REVISAO}}, {{DATA_CARIMBO}}.
-- Do que trata: {{DESCRICAO_CONCRETA}}.
-- Cobertura: {{REPRESENTACOES_PAGINAS_REGIOES_MODEL_LAYOUTS_VIEWPORTS_E_ESTADOS_REALMENTE_EXAMINADOS}}.
-- Método de consulta: {{VISUAL_TEXTO_EXTRAIDO_OCR_CAD_BIM}}.
-
-| Prancha/página/layout e vista | Conteúdo encontrado | Dados disponíveis e sua origem | Serviços que podem ser atendidos | Limites/conflitos | Evidência |
-|---|---|---|---|---|---|
-| {{LOCALIZADOR}} | {{ASSUNTO}} | {{COTAS_ETIQUETAS_NIVEIS_ESPECIFICACOES}} | {{ITENS}} | {{LIMITES_OU_NENHUM_IDENTIFICADO}} | {{LINK}} |
-
-### Representações dentro deste arquivo
-
-Um arquivo pode conter várias plantas/vistas. Preencher uma linha por representação identificada, incluindo as ainda não examinadas. Para CAD, informar Model/região ou layout/viewport e as camadas/estado necessários; para PDF, informar página e região. Não tratar cada layer como planta nem cada viewport como nova ocorrência física.
-
-| ID da representação | Título/assunto, pavimento, disciplina, fase e revisão | Espaço e localizador reproduzível | Camadas/estado de visibilidade e recortes | Relação com outras representações | Cobertura/limitações | Evidência |
-|---|---|---|---|---|---|---|
-| {{FONTE_ID}}.V01 | {{IDENTIDADE_DESTA_VISTA}} | {{MODEL_REGIAO_VISTA_OU_LAYOUT_VIEWPORT_OU_PAGINA_REGIAO}} | {{CONFIGURACAO_PERTINENTE_OU_NAO_APLICAVEL}} | {{UNIVERSO_FISICO_COMUM_DETALHE_ALTERNATIVA_OU_INDEPENDENTE}} | {{IDENTIFICADA_NAO_EXAMINADA_PARCIAL_EXAMINADA_FORA_DO_ESCOPO_COM_MOTIVO}} | {{LINK}} |
-
-Representações sem nome: {{IMAGEM_GERAL_COM_IDS_DAS_REGIOES_E_LOCALIZACAO; NAO_DEPENDER_DA_VISTA_INICIAL}}.
-
-## Índice para consultas futuras
-
-| Informação procurada | Fonte, revisão, ID da representação e localizador | Observação de alcance |
+| Quadro | Representação | Uso |
 |---|---|---|
-| {{ASSUNTO_OU_SERVICO}} | {{FONTE_VISTA}} | {{EXISTENTE_NOVO_DETALHE_TIPICO_ETC}} |
+| {{QUADRO_DE_AREAS_ESQUADRIAS_ACABAMENTOS_ACO_ESTACAS}} | {{ID}} | {{ITENS}} |
 
-## Critérios de uso das fontes
+## Índice assunto → fonte
 
-{{RELACAO_ENTRE_PLANTAS_CORTES_DETALHES_E_REVISOES; CONFLITOS_COM_IDS_DE_PENDENCIA; NAO_PREENCHER_POR_SUPOSICAO}}
+| Assunto ou serviço | Representações | Observação |
+|---|---|---|
+| {{PISO_FORRO_ESQUADRIAS_ETC}} | {{IDS}} | {{EXISTENTE_NOVO_DETALHE_TIPICO}} |
+
+## Limites e conflitos
+
+{{FONTES_FALTANTES_REVISOES_INCOMPATIVEIS_CAMADAS_OU_XREFS_AUSENTES_COM_IDS_DE_PENDENCIA}}

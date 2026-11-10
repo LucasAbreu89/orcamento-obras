@@ -1,0 +1,11 @@
+# Bibliotecas do kit de levantamento (instalação única):
+#   python3 -m pip install -r procedimentos-orcamento/scripts/requirements.txt
+# planilha.py, geometria.py, levantamento.py, validar_entrega.py, recalcular.py e preparar_projeto.py
+# funcionam só com a biblioteca padrão.
+ezdxf>=1.1        # cad.py: leitura de DXF e conversão via ODA File Converter
+matplotlib>=3.7   # cad.py render
+shapely>=2.0      # geometria.py uniao
+pymupdf>=1.23     # pdf.py
+openpyxl>=3.1     # gerar_planilha.py
+pillow>=10.1      # imagens da planilha e prints do PDF
+# ifcopenshell    # opcional: leitura de IFC por script próprio (o kit não inclui leitor IFC)

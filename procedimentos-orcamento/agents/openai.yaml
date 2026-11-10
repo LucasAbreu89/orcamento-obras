@@ -1,7 +1,7 @@
 interface:
   display_name: "Quantitativos de obras"
-  short_description: "Projetos, quantitativos e memórias por serviço"
-  default_prompt: "Use $procedimentos-orcamento para levantar os quantitativos da pasta de projetos e da planilha indicadas, com memórias por item e dúvidas registradas sem interromper o lote."
+  short_description: "Levantamento de quantitativos com memória e print por item"
+  default_prompt: "Use $procedimentos-orcamento para levantar os quantitativos da pasta de projetos e da planilha indicadas: confirme o escopo antes de medir, registre premissas e pendências sem interromper o lote e entregue a planilha validada."
 
 policy:
   allow_implicit_invocation: true
