@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """DWG/DXF: conversão, inventário, extração de contornos, prints marcados e comparação de revisões.
 
-  converter   DWG → DXF pelo ODA File Converter (via ezdxf.addons.odafc)
+  converter   DWG → DXF pelo ODA File Converter (via ezdxf.addons.odafc) ou, sem ele, pelo
+              AcCoreConsole do AutoCAD (sem interface, sobre cópias); hashes, ferramenta e
+              tentativas vão para o manifesto conversao_dxf.json da pasta de saída
   inventario  unidade, camadas, layouts e viewports, blocos com contagem, textos, cotas,
               hachuras, referências externas e as regiões desenhadas no Model
   extrair     polilinhas, hachuras e círculos (arcos exatos, furos) no formato do geometria.py
@@ -9,15 +11,23 @@
               coordenadas do próprio desenho (formato em marcas.py)
   comparar    entidades acrescentadas e removidas por camada entre duas revisões
 
-Precisa de ezdxf; render também de matplotlib. O arquivo de origem nunca é gravado.
+Precisa de ezdxf (a conversão pelo AcCoreConsole, não); render também de matplotlib. O arquivo
+de origem nunca é gravado.
 """
 
 import argparse
 import fnmatch
+import glob
 import hashlib
 import json
 import math
+import os
+import re
+import shutil
+import subprocess
 import sys
+import tempfile
+import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -629,24 +639,235 @@ def destino_dxf(dwg, entrada, pasta_saida):
     return Path(pasta_saida) / relativo / f"{dwg.stem}.dxf"
 
 
-def converter(entrada, pasta_saida, versao="R2018"):
-    _ezdxf()
-    from ezdxf.addons import odafc
-    entrada, pasta_saida = Path(entrada), Path(pasta_saida)
-    resultados = []
-    for dwg in arquivos_dwg(entrada):
-        destino = destino_dxf(dwg, entrada, pasta_saida)
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            odafc.convert(str(dwg), str(destino), version=versao, replace=True)
-        except odafc.ODAFCNotInstalledError:
-            sys.exit("ODA File Converter não encontrado. Instale-o (gratuito, Open Design Alliance) ou exporte DXF "
-                     "de uma cópia pelo CAD disponível (referência 07 §2).")
-        except Exception as erro:  # noqa: BLE001 - registrar falha por arquivo e seguir
-            resultados.append({"dwg": str(dwg), "erro": str(erro)})
+ACCORECONSOLE_PADROES = (
+    "/Applications/Autodesk/AutoCAD */AutoCAD *.app/Contents/Helpers/AcCoreConsole.app/Contents/MacOS/AcCoreConsole",
+    "C:/Program Files/Autodesk/AutoCAD */accoreconsole.exe",
+)
+VERSOES_DXFOUT = ("R12", "2000", "2004", "2007", "2010", "2013", "2018")
+MANIFESTO_CONVERSAO = "conversao_dxf.json"
+
+
+def localizar_accoreconsole():
+    """Console sem interface do AutoCAD (o mais novo instalado); a variável ACCORECONSOLE tem prioridade."""
+    candidatos = [os.environ.get("ACCORECONSOLE")]
+    for padrao in ACCORECONSOLE_PADROES:
+        candidatos += sorted(glob.glob(padrao), reverse=True)
+    return next((str(c) for c in candidatos if c and Path(c).is_file()), None)
+
+
+def _oda_instalado():
+    try:
+        from ezdxf.addons import odafc
+    except ImportError:
+        return False
+    return odafc.is_installed()
+
+
+def _escolher_conversor(via):
+    """Rota de conversão na ordem ODA → AcCoreConsole; sem nenhuma, encerra explicando as alternativas."""
+    if via == "oda":
+        _ezdxf()
+    if via in ("auto", "oda") and _oda_instalado():
+        return "oda", None
+    if via == "oda":
+        sys.exit("ODA File Converter não encontrado. Instale-o (gratuito, Open Design Alliance), use --via "
+                 "accoreconsole com o AutoCAD instalado ou siga a referência 07 §2.")
+    executavel = localizar_accoreconsole()
+    if executavel:
+        return "accoreconsole", executavel
+    if via == "accoreconsole":
+        sys.exit("AcCoreConsole não encontrado nas pastas do AutoCAD; indique o executável na variável ACCORECONSOLE "
+                 "ou siga a referência 07 §2.")
+    sys.exit("Nenhum conversor de DWG: ODA File Converter e AcCoreConsole do AutoCAD não encontrados. Instale o ODA "
+             "(gratuito), exporte DXF de uma cópia pelo AutoCAD pela interface ou peça DXF/PDF (referência 07 §2).")
+
+
+def _versao_dxfout(versao):
+    """Versão no formato do DXFOUT (2018, 2013… R12) a partir de --versao (R2018 ou 2018)."""
+    texto = str(versao).upper()
+    texto = texto[1:] if texto.startswith("R") else texto
+    texto = "R12" if texto == "12" else texto
+    if texto not in VERSOES_DXFOUT:
+        sys.exit(f"Versão {versao} não exportável pelo DXFOUT; use uma destas: {', '.join(VERSOES_DXFOUT)}.")
+    return texto
+
+
+def dxf_completo(caminho):
+    """Todo DXF ASCII termina no par 0/EOF; exportação interrompida não chega a ele."""
+    try:
+        with open(caminho, "rb") as arquivo:
+            arquivo.seek(0, os.SEEK_END)
+            arquivo.seek(max(0, arquivo.tell() - 256))
+            linhas = [linha.strip() for linha in arquivo.read().splitlines() if linha.strip()]
+    except OSError:
+        return False
+    return linhas[-2:] == [b"0", b"EOF"]
+
+
+def _pasta_ascii():
+    """Pasta temporária de caminho ASCII: o AcCoreConsole lê o .scr em cp1252 e não abre caminhos com acento."""
+    bases = [tempfile.gettempdir()]
+    bases += ([os.environ.get("PUBLIC"), os.environ.get("SystemDrive", "C:") + "\\"] if os.name == "nt"
+              else ["/tmp", "/var/tmp"])
+    for base in bases:
+        if not base or not base.isascii():
             continue
-        resultados.append({"dwg": str(dwg), "sha256_dwg": _sha256(dwg), "dxf": str(destino), "sha256_dxf": _sha256(destino)})
-    return {"convertidos": [r for r in resultados if "dxf" in r], "falhas": [r for r in resultados if "erro" in r]}
+        try:
+            pasta = tempfile.mkdtemp(prefix="accoreconsole_", dir=base)
+        except OSError:
+            continue
+        if pasta.isascii():
+            return Path(pasta)
+        shutil.rmtree(pasta, ignore_errors=True)
+    raise RuntimeError("nenhuma pasta temporária com caminho ASCII; defina TMPDIR (no Windows, TEMP) sem acentos")
+
+
+def _texto_console(bruto):
+    """Saída do AcCoreConsole como texto (no Windows ela vem em UTF-16, com bytes nulos)."""
+    return bruto.replace(b"\x00", b"").decode("utf-8", errors="replace")
+
+
+def _final(texto, quantidade=8):
+    return [linha.strip() for linha in texto.splitlines() if linha.strip()][-quantidade:]
+
+
+def _nome_accoreconsole(executavel):
+    versao = re.search(r"AutoCAD \d{4}", executavel)
+    return f"AcCoreConsole ({versao[0]})" if versao else "AcCoreConsole"
+
+
+def _tentativa_accoreconsole(executavel, copia, pasta, numero, versao, audit, tempo_limite):
+    """Uma exportação: grava o .scr (uma resposta por linha), roda o console e confere o DXF gerado."""
+    saida, roteiro, log = (pasta / f"tentativa{numero}{extensao}" for extensao in (".dxf", ".scr", ".log"))
+    respostas = ["FILEDIA", "0", *(["AUDIT", "Y"] if audit else []), "DXFOUT", f'"{saida}"', "V", versao, "16",
+                 "QUIT", "Y"]
+    roteiro.write_text("\n".join(respostas) + "\n", encoding="ascii")
+    chave = "/" if os.name == "nt" else "-"
+    comando = [executavel, f"{chave}i", str(copia), f"{chave}s", str(roteiro), f"{chave}l", "en-US"]
+    registro = {"tentativa": numero, "versao_dxf": versao, "audit": audit}
+    inicio = time.monotonic()
+    try:
+        with open(log, "wb") as saida_console:  # arquivo, não pipe: o tempo-limite não espera processos filhos
+            processo = subprocess.run(comando, stdin=subprocess.DEVNULL, stdout=saida_console,
+                                      stderr=subprocess.STDOUT, cwd=pasta, timeout=tempo_limite)
+        registro["codigo_saida"] = processo.returncode
+    except subprocess.TimeoutExpired:
+        registro["erro"] = f"tempo esgotado ({tempo_limite} s)"
+    except OSError as erro:
+        registro["erro"] = f"AcCoreConsole não executou: {erro}"
+    registro["segundos"] = round(time.monotonic() - inicio, 1)
+    texto = _texto_console(log.read_bytes()) if log.is_file() else ""
+    if "erro" not in registro:
+        if not saida.is_file():
+            registro["erro"] = "DXF não gerado"
+        elif not dxf_completo(saida):
+            registro["erro"] = "DXF truncado: não termina em EOF"
+    return registro, saida, texto
+
+
+def _avisos_console(texto, audit):
+    """Resumo do AUDIT e alertas da saída do console que pedem conferir o DXF contra o PDF."""
+    avisos, alertas = {}, []
+    if "Custom object" in texto:
+        alertas.append("o desenho tem objetos personalizados (proxy), que podem faltar no DXF: conferir o conteúdo "
+                       "contra o PDF")
+    if audit:
+        encontrados = re.search(r"Total errors found (\d+) fixed (\d+)", texto)
+        apagados = re.search(r"Erased (\d+) objects", texto)
+        if encontrados:
+            avisos["auditoria"] = {"erros": int(encontrados[1]), "corrigidos": int(encontrados[2]),
+                                   "apagados": int(apagados[1]) if apagados else 0}
+        alertas.append("DXF exportado depois do AUDIT, que corrige o desenho e pode apagar objetos: conferir o "
+                       "conteúdo contra o PDF")
+    if alertas:
+        avisos["alertas"] = alertas
+    return avisos
+
+
+def _converter_accoreconsole(dwg, destino, executavel, versao, tempo_limite):
+    """Converte uma cópia do DWG numa pasta ASCII; sem DXF completo, refaz com AUDIT e versão 2013."""
+    registro = {"dwg": str(dwg), "dxf": str(destino), "ferramenta": _nome_accoreconsole(executavel),
+                "executavel": executavel}
+    falhas, pasta = [], None
+    try:
+        registro["sha256_dwg"] = _sha256(dwg)
+        pasta = _pasta_ascii()
+        copia = pasta / "desenho.dwg"
+        shutil.copyfile(dwg, copia)
+        for numero, (versao_tentativa, audit) in enumerate(((versao, False), ("2013", True)), start=1):
+            tentativa, saida, texto = _tentativa_accoreconsole(executavel, copia, pasta, numero, versao_tentativa,
+                                                               audit, tempo_limite)
+            if "erro" not in tentativa:
+                destino.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(saida), str(destino))
+                registro.update(sha256_dxf=_sha256(destino), versao_dxf=versao_tentativa, audit=audit,
+                                tentativas=numero, falhas_tentativas=falhas, segundos=tentativa["segundos"],
+                                codigo_saida=tentativa["codigo_saida"], **_avisos_console(texto, audit))
+                return registro
+            falhas.append({**tentativa, "log_final": _final(texto)})
+            if "codigo_saida" not in tentativa:  # tempo esgotado ou programa que não iniciou: AUDIT não resolve
+                break
+        erro = falhas[-1]["erro"]
+    except (OSError, RuntimeError) as falha:  # leitura do original, pasta temporária, cópia ou destino
+        erro = str(falha)
+    finally:
+        if pasta:
+            shutil.rmtree(pasta, ignore_errors=True)
+    return {**registro, "tentativas": len(falhas), "falhas_tentativas": falhas, "erro": erro}
+
+
+def _converter_oda(dwg, destino, versao):
+    from ezdxf.addons import odafc
+    registro = {"dwg": str(dwg), "dxf": str(destino), "ferramenta": "ODA File Converter", "versao_dxf": versao,
+                "tentativas": 1, "falhas_tentativas": []}
+    try:
+        registro["sha256_dwg"] = _sha256(dwg)
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        odafc.convert(str(dwg), str(destino), version=versao, replace=True)
+        registro["sha256_dxf"] = _sha256(destino)
+    except Exception as erro:  # noqa: BLE001 - registrar falha por arquivo e seguir
+        registro.update(erro=str(erro), falhas_tentativas=[{"tentativa": 1, "erro": str(erro)}])
+    return registro
+
+
+def _gravar_manifesto(caminho, resultado):
+    """Acumula as conversões: o registro novo de um DXF substitui o anterior; os demais ficam."""
+    manifesto = {}
+    if caminho.is_file():
+        try:
+            manifesto = json.loads(caminho.read_text(encoding="utf-8"))
+        except ValueError:
+            manifesto = {}
+    refeitos = {r["dxf"] for r in resultado["convertidos"] + resultado["falhas"]}
+    for chave in ("convertidos", "falhas"):
+        manifesto[chave] = [r for r in manifesto.get(chave, []) if r.get("dxf") not in refeitos] + resultado[chave]
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    caminho.write_text(json.dumps(manifesto, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return caminho
+
+
+def converter(entrada, pasta_saida, versao="R2018", via="auto", tempo_limite=600):
+    """DWG → DXF de um arquivo ou pasta. O original só é lido; o resultado também vai para o manifesto."""
+    entrada, pasta_saida = Path(entrada).resolve(), Path(pasta_saida).resolve()
+    rota, executavel = _escolher_conversor(via)
+    versao_console = _versao_dxfout(versao) if rota == "accoreconsole" else None
+    dwgs = arquivos_dwg(entrada)
+    resultados = []
+    for numero, dwg in enumerate(dwgs, start=1):
+        destino = destino_dxf(dwg, entrada, pasta_saida)
+        if destino.exists() and destino.samefile(dwg):
+            registro = {"dwg": str(dwg), "dxf": str(destino), "tentativas": 0,
+                        "erro": "o DXF de saída seria gravado sobre o arquivo de entrada; escolha outra pasta"}
+        elif rota == "oda":
+            registro = _converter_oda(dwg, destino, versao)
+        else:
+            registro = _converter_accoreconsole(dwg, destino, executavel, versao_console, tempo_limite)
+        resultados.append(registro)
+        print(f"[{numero}/{len(dwgs)}] {'falha' if 'erro' in registro else 'ok'}: {dwg}", file=sys.stderr, flush=True)
+    resultado = {"convertidos": [r for r in resultados if "erro" not in r],
+                 "falhas": [r for r in resultados if "erro" in r]}
+    resultado["manifesto"] = str(_gravar_manifesto(pasta_saida / MANIFESTO_CONVERSAO, resultado))
+    return resultado
 
 
 # ---------------------------------------------------------------- linha de comando
@@ -671,10 +892,13 @@ def _gravar(dados, saida):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="comando", required=True)
-    p = sub.add_parser("converter", help="DWG → DXF (ODA File Converter)")
+    p = sub.add_parser("converter", help="DWG → DXF (ODA File Converter ou AcCoreConsole do AutoCAD)")
     p.add_argument("entrada", help="arquivo .dwg ou pasta")
-    p.add_argument("--saida", required=True, help="pasta dos DXF")
+    p.add_argument("--saida", required=True, help="pasta dos DXF; o manifesto conversao_dxf.json fica nela")
     p.add_argument("--versao", default="R2018")
+    p.add_argument("--via", choices=("auto", "oda", "accoreconsole"), default="auto",
+                   help="auto: ODA File Converter se instalado; senão, AcCoreConsole do AutoCAD")
+    p.add_argument("--tempo-limite", type=int, default=600, help="segundos por tentativa do AcCoreConsole")
     p = sub.add_parser("inventario")
     p.add_argument("dxf")
     p.add_argument("--saida")
@@ -707,7 +931,7 @@ def main():
     a = parser.parse_args()
 
     if a.comando == "converter":
-        print(_gravar(converter(a.entrada, a.saida, a.versao), None))
+        print(_gravar(converter(a.entrada, a.saida, a.versao, a.via, a.tempo_limite), None))
     elif a.comando == "inventario":
         inv = inventario(a.dxf)
         _gravar(inv, a.saida)

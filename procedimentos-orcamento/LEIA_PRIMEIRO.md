@@ -17,7 +17,7 @@ procedimentos-orcamento/.venv/bin/python -m pip install -r procedimentos-orcamen
 Com o ambiente criado, o agente roda os scripts com `procedimentos-orcamento/.venv/bin/python`.
 
 Também recomendados:
-- **ODA File Converter** (gratuito, Open Design Alliance): converte DWG em DXF sem abrir o CAD. Sem ele, o agente usa um CAD instalado pela interface ou pede DXF/PDF.
+- **ODA File Converter** (gratuito, Open Design Alliance): converte DWG em DXF sem abrir o CAD. Sem ele, o agente usa o AcCoreConsole do AutoCAD instalado (também sem interface); sem os dois, exporta pelo AutoCAD pela interface ou pede DXF/PDF.
 - **LibreOffice**: recálculo independente da planilha entregue e conversão de XLS/ODS.
 
 Para conferir o que está disponível: `python3 procedimentos-orcamento/scripts/ambiente.py`. Para testar o kit com arquivos sintéticos (os testes que dependem de uma biblioteca ausente são pulados):

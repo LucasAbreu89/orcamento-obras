@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Confere as ferramentas disponíveis e indica a rota de leitura de cada formato.
 
-Lista bibliotecas Python, ODA File Converter, LibreOffice e AutoCAD instalados e resume
-as rotas possíveis para DWG, PDF, geração da planilha, recálculo e uniões. Não instala
-nada. Saída em JSON (stdout e, com --saida, em arquivo).
+Lista bibliotecas Python, ODA File Converter, AcCoreConsole do AutoCAD, LibreOffice e AutoCAD
+instalados e resume as rotas possíveis para DWG, PDF, geração da planilha, recálculo e uniões.
+Não instala nada. Saída em JSON (stdout e, com --saida, em arquivo).
 """
 
 import argparse
@@ -16,6 +16,7 @@ import shutil
 import sys
 from pathlib import Path
 
+from cad import localizar_accoreconsole
 from recalcular import localizar_soffice
 
 BIBLIOTECAS = {"ezdxf": "ezdxf", "shapely": "shapely", "pymupdf": "pymupdf", "openpyxl": "openpyxl",
@@ -58,10 +59,13 @@ def _instrucao(faltando):
 def diagnosticar():
     bibliotecas = {nome: _versao(modulo) for nome, modulo in BIBLIOTECAS.items()}
     opcionais = {nome: _versao(modulo) for nome, modulo in OPCIONAIS.items()}
-    programas = {"oda_file_converter": _oda(), "libreoffice": localizar_soffice(), "autocad": _autocad()}
+    programas = {"oda_file_converter": _oda(), "accoreconsole": localizar_accoreconsole(),
+                 "libreoffice": localizar_soffice(), "autocad": _autocad()}
     tem = {nome: versao is not None for nome, versao in bibliotecas.items()}
     if tem["ezdxf"] and programas["oda_file_converter"]:
         dwg = "cad.py converter (ODA) e leitura do DXF por script"
+    elif programas["accoreconsole"]:
+        dwg = "cad.py converter (AcCoreConsole do AutoCAD, sem interface) e leitura do DXF por script"
     elif programas["autocad"]:
         dwg = "sem conversor: exportar DXF de uma cópia pelo AutoCAD (computer use) ou pedir DXF/PDF"
     else:

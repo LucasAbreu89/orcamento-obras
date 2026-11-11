@@ -202,7 +202,7 @@ class Cad(unittest.TestCase):
             self.skipTest("ODA File Converter instalado")
         falso = self.dir / "arq.dwg"
         falso.write_bytes(b"AC1032")
-        processo = rodar("cad.py", "converter", falso, "--saida", self.dir / "dxf")
+        processo = rodar("cad.py", "converter", falso, "--saida", self.dir / "dxf", "--via", "oda")
         self.assertNotEqual(processo.returncode, 0)
         self.assertIn("ODA", processo.stdout + processo.stderr)
 

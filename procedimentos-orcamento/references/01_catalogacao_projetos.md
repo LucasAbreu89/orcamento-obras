@@ -8,7 +8,7 @@ O catálogo diz o que existe em cada arquivo e onde está cada informação, par
 
 | Formato | Rota | Cuidado |
 |---|---|---|
-| DWG | `cad.py converter` para DXF, depois as rotas de DXF | sem conversor, ver [07 §2](07_ferramentas_e_aplicativos.md) |
+| DWG | `cad.py converter` para DXF (ODA File Converter ou, sem ele, AcCoreConsole do AutoCAD), depois as rotas de DXF | sem os dois, exportar DXF de uma cópia pelo AutoCAD pela interface ou pedir DXF/PDF ([07 §2](07_ferramentas_e_aplicativos.md)); `alertas` no `conversao_dxf.json` pedem conferir o DXF contra o PDF |
 | DXF | `cad.py inventario`, `extrair`, `render` | validar a unidade (§3) |
 | PDF vetorial | `pdf.py inventario`, `texto`, `medir`, `render` | validar a escala antes de medir |
 | PDF escaneado ou imagem | leitura visual; medição gráfica com `pdf.py render --grade` e `medir --poligono`, como PREMISSA | cotas legíveis têm prioridade |
