@@ -203,6 +203,26 @@ class Gerador:
             celula.data_type = "s"
         return celula
 
+    @staticmethod
+    def _linhas_texto(valor, largura):
+        """Linhas que um texto ocupa numa largura de coluna (estimativa conservadora)."""
+        if valor in (None, ""):
+            return 1
+        por_linha = max(1, int(largura * 1.1))
+        return sum(max(1, math.ceil(len(trecho) / por_linha)) for trecho in str(valor).split("\n"))
+
+    def _altura(self, ws, linha, larguras, minimo=15.0):
+        """Altura explícita da linha pelo texto mais longo; o LibreOffice posiciona os prints por ela."""
+        maior = max((self._linhas_texto(ws[f"{letra}{linha}"].value, largura) for letra, largura in larguras.items()),
+                    default=1)
+        ws.row_dimensions[linha].height = min(409.0, max(minimo, 15.0 * maior))
+
+    def _paisagem(self, ws):
+        ws.page_setup.orientation = "landscape"
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+
     def _cabecalho(self, ws, linha, coluna, titulos):
         for i, titulo in enumerate(titulos):
             celula = ws.cell(row=linha, column=coluna + i, value=titulo)
@@ -294,6 +314,10 @@ class Gerador:
                 ws[link].hyperlink = self._link(link, memoria)
                 ws[link].font = self.Font(color="0563C1", underline="single")
                 self._texto(ws, obs, self._observacao(item))
+                ws[obs].alignment = self.Alignment(wrap_text=True, vertical="top")
+                if self.modo != "mesmo_arquivo":
+                    ws[f"B{linha_saida}"].alignment = self.Alignment(wrap_text=True, vertical="top")
+                    self._altura(ws, linha_saida, {"B": 60, letras[3]: 48})
                 self.manifesto["itens"][item["chave"]] = {
                     "aba": ws.title, "linha": linha_saida, "memoria": memoria,
                     "celulas": {"qtd": qtd, "estado": estado, "memoria": link, "obs": obs}}
@@ -302,7 +326,10 @@ class Gerador:
             ws.column_dimensions[letras[0]].width = 16
             ws.column_dimensions[letras[1]].width = 16
             ws.column_dimensions[letras[2]].width = 16
-            ws.column_dimensions[letras[3]].width = 40
+            ws.column_dimensions[letras[3]].width = 40 if self.modo == "mesmo_arquivo" else 48
+            if self.modo != "mesmo_arquivo":
+                self._paisagem(ws)
+                ws.freeze_panes = "A2"
 
     def _copiar_lista(self, ws, lista, indice_lista, celulas, itens_por_linha):
         """Copia o bloco da lista (itens e agrupadores) como valores; devolve (linha de saída, linha original, item)."""
@@ -325,11 +352,16 @@ class Gerador:
                 continue
             for coluna, valor in enumerate(valores, start=1):
                 self._texto(ws, f"{pl.col_letra(coluna)}{posicao}", valor)
+            if isinstance(valores[3], (int, float)):
+                ws[f"D{posicao}"].number_format = "#,##0.00##"
+            ws[f"B{posicao}"].alignment = self.Alignment(wrap_text=True, vertical="top")
+            self._altura(ws, posicao, {"B": 60})
             ws[f"I{posicao}"] = linha
             if linha in itens_por_linha:
                 destino.append((posicao, linha, itens_por_linha[linha]))
             posicao += 1
-        ws.column_dimensions["B"].width = 50
+        for letra, largura in zip("ABCDI", (10, 60, 10, 14, 12)):
+            ws.column_dimensions[letra].width = largura
         return destino
 
     @staticmethod
@@ -364,6 +396,10 @@ class Gerador:
             ("A15", "O que ficou fora", (item.get("texto") or {}).get("ficou_fora", "")),
             ("A16", "O que falta", (item.get("texto") or {}).get("falta", "")),
         ]
+        larguras = {"A": 22, "B": 52, "C": 18, "D": 13, "E": 10, "F": 19, "G": 14, "H": 12, "I": 7, "J": 7,
+                    "K": 13, "L": 8, "M": 15, "N": 24, "O": 14}
+        largura_b_e = sum(larguras[c] for c in "BCDE")
+        largura_b_o = sum(larguras[c] for c in "BCDEFGHIJKLMNO")
         for ref, rotulo, valor in rotulos:
             ws[ref] = rotulo
             ws[ref].font = negrito
@@ -371,11 +407,17 @@ class Gerador:
             linha = ref[1:]
             self._texto(ws, f"B{linha}", valor)
             ws[f"B{linha}"].alignment = quebra
+            ate = "O" if int(linha) >= 14 else "E"
+            ws.merge_cells(f"B{linha}:{ate}{linha}")
+            self._altura(ws, int(linha), {"A": larguras["A"], "B": largura_b_o if ate == "O" else largura_b_e})
         if item.get("sem_representacao_grafica"):
             ws["A17"] = "Sem representação gráfica"
             ws["A17"].font = negrito
+            ws["A17"].alignment = quebra
             self._texto(ws, "B17", item["sem_representacao_grafica"])
             ws["B17"].alignment = quebra
+            ws.merge_cells("B17:O17")
+            self._altura(ws, 17, {"A": larguras["A"], "B": largura_b_o})
 
         parcelas = item.get("parcelas") or []
         formulas = formulas_resultado(len(parcelas))
@@ -424,6 +466,9 @@ class Gerador:
             self._texto(ws, f"M{linha}", parcela.get("origem"))
             self._texto(ws, f"N{linha}", parcela.get("fonte"))
             self._texto(ws, f"O{linha}", ", ".join(parcela.get("refs") or []))
+            for letra in "ABCDEFGHIJKLMNO":
+                ws[f"{letra}{linha}"].alignment = quebra
+            self._altura(ws, linha, {c: larguras[c] for c in "ABCDMNO"})
         linha = PRIMEIRA_PARCELA + max(len(parcelas), 1) + 1
 
         diagnostico = item.get("diagnostico") or []
@@ -438,6 +483,7 @@ class Gerador:
                 for coluna, campo in enumerate(campos, start=1):
                     celula = self._texto(ws, f"{pl.col_letra(coluna)}{linha}", registro.get(campo))
                     celula.alignment = quebra
+                self._altura(ws, linha, {c: larguras[c] for c in "ABCDEF"})
             linha += 2
 
         for evidencia in item.get("evidencias") or []:
@@ -448,8 +494,13 @@ class Gerador:
             legenda = f"{caminho.name} — {evidencia.get('legenda', '')}"
             if evidencia.get("parcelas"):
                 legenda += f" (parcelas: {', '.join(evidencia['parcelas'])})"
+            from openpyxl.worksheet.pagebreak import Break
+            ws.row_breaks.append(Break(id=linha - 1))
             ws[f"A{linha}"] = legenda
             ws[f"A{linha}"].font = negrito
+            ws[f"A{linha}"].alignment = quebra
+            ws.merge_cells(f"A{linha}:O{linha}")
+            self._altura(ws, linha, {"A": larguras["A"] + largura_b_o})
             dados, (largura, altura) = preparar_imagem(caminho, self.largura_imagem)
             from openpyxl.drawing.image import Image as ImagemExcel
             imagem = ImagemExcel(io.BytesIO(dados))
@@ -460,14 +511,9 @@ class Gerador:
             self.manifesto["bytes_imagens"] += len(dados)
             linha += 3 + math.ceil(imagem.height / 20)
 
-        larguras = {"A": 22, "B": 52, "C": 18, "D": 13, "E": 10, "F": 19, "G": 14, "H": 12, "I": 7, "J": 7,
-                    "K": 13, "L": 8, "M": 15, "N": 24, "O": 14}
         for letra, largura in larguras.items():
             ws.column_dimensions[letra].width = largura
-        ws.page_setup.orientation = "landscape"
-        ws.page_setup.fitToWidth = 1
-        ws.page_setup.fitToHeight = 0
-        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        self._paisagem(ws)
 
     def _criterio(self, cid):
         for c in self.dados.get("criterios") or []:
@@ -484,21 +530,30 @@ class Gerador:
     def _fontes_das_parcelas(item):
         return ", ".join(sorted({p.get("fonte") for p in item.get("parcelas") or [] if p.get("fonte")}))
 
-    def _tabela(self, nome, titulos, linhas):
+    def _tabela(self, nome, titulos, linhas, larguras=None):
         ws = self.wb.create_sheet(nome)
         self.manifesto["abas_criadas"].append(ws.title)
         self._cabecalho(ws, 1, 1, titulos)
         quebra = self.Alignment(wrap_text=True, vertical="top")
+        larguras = {pl.col_letra(j): (larguras or {}).get(j, 28) for j in range(1, len(titulos) + 1)}
         for i, valores in enumerate(linhas, start=2):
             for j, valor in enumerate(valores, start=1):
                 if isinstance(valor, (list, tuple)):
                     valor = ", ".join(map(str, valor))
                 celula = self._texto(ws, f"{pl.col_letra(j)}{i}", valor)
                 celula.alignment = quebra
-        for j in range(1, len(titulos) + 1):
-            ws.column_dimensions[pl.col_letra(j)].width = 28
+            self._altura(ws, i, larguras)
+        for letra, largura in larguras.items():
+            ws.column_dimensions[letra].width = largura
         ws.freeze_panes = "A2"
+        self._paisagem(ws)
         return ws
+
+    @staticmethod
+    def _parametros(valor):
+        if isinstance(valor, dict):
+            return "\n".join(f"{chave}: {texto}" for chave, texto in valor.items())
+        return valor
 
     def _abas_do_levantamento(self, itens):
         dados = self.dados
@@ -513,6 +568,9 @@ class Gerador:
             resumo[f"A{i}"] = rotulo
             resumo[f"A{i}"].font = self.Font(bold=True)
             self._texto(resumo, f"B{i}", valor)
+            resumo[f"B{i}"].alignment = self.Alignment(wrap_text=True, vertical="top")
+            resumo.merge_cells(f"B{i}:G{i}")
+            self._altura(resumo, i, {"B": 121})
         contagem = {e: sum(1 for r in self.resultados.values() if r["estado"] == e) for e in lv.ESTADOS}
         linha = len(cabecalho) + 2
         self._cabecalho(resumo, linha, 1, ("Estado", "Itens"))
@@ -533,6 +591,7 @@ class Gerador:
             resumo[f"G{linha}"].hyperlink = self._link(f"G{linha}", memoria)
         for letra, largura in zip("ABCDEFG", (24, 12, 50, 16, 16, 9, 18)):
             resumo.column_dimensions[letra].width = largura
+        self._paisagem(resumo)
 
         def linhas(registros, campos):
             return [[r.get(c) for c in campos] for r in registros or []]
@@ -541,19 +600,22 @@ class Gerador:
                      ("ID", "Natureza", "Itens", "Pergunta", "Fonte consultada", "Já comprovado", "Opções e efeito",
                       "Impacto", "Responsável", "Situação"),
                      linhas(dados.get("pendencias"), ("id", "natureza", "itens", "pergunta", "fonte_consultada",
-                                                      "comprovado", "opcoes", "impacto", "responsavel", "situacao")))
+                                                      "comprovado", "opcoes", "impacto", "responsavel", "situacao")),
+                     {1: 7, 2: 14, 3: 12, 4: 55, 5: 34, 6: 34, 7: 40, 8: 20, 9: 16, 10: 12})
         self._tabela(self.nomes_fixos["Premissas"],
                      ("ID", "Itens", "Parâmetro", "Valor adotado", "Base", "Impacto", "Confirmar com", "Situação"),
                      linhas(dados.get("premissas"), ("id", "itens", "parametro", "valor", "base", "impacto",
-                                                     "confirmar_com", "situacao")))
-        criterios = [[c.get("id"), c.get("familia"), c.get("regra"),
-                      json.dumps(c.get("parametros"), ensure_ascii=False) if isinstance(c.get("parametros"), dict)
-                      else c.get("parametros"), c.get("fonte")] for c in dados.get("criterios") or []]
-        self._tabela(self.nomes_fixos["Critérios"], ("ID", "Família", "Regra", "Parâmetros", "Fonte"), criterios)
+                                                     "confirmar_com", "situacao")),
+                     {1: 7, 2: 14, 3: 34, 4: 34, 5: 45, 6: 34, 7: 16, 8: 18})
+        criterios = [[c.get("id"), c.get("familia"), c.get("regra"), self._parametros(c.get("parametros")),
+                      c.get("fonte")] for c in dados.get("criterios") or []]
+        self._tabela(self.nomes_fixos["Critérios"], ("ID", "Família", "Regra", "Parâmetros", "Fonte"), criterios,
+                     {1: 6, 2: 24, 3: 70, 4: 45, 5: 34})
         fontes = [[f.get("id"), f.get("arquivo"), f.get("revisao"), f.get("sha256"),
                    "\n".join(f"{r.get('id')} — {r.get('titulo', '')} — {r.get('localizador', '')} — {r.get('leitura', '')}"
                              for r in f.get("representacoes") or [])] for f in dados.get("fontes") or []]
-        self._tabela(self.nomes_fixos["Fontes"], ("ID", "Arquivo", "Revisão", "SHA-256", "Representações"), fontes)
+        self._tabela(self.nomes_fixos["Fontes"], ("ID", "Arquivo", "Revisão", "SHA-256", "Representações"), fontes,
+                     {1: 6, 2: 40, 3: 14, 4: 20, 5: 110})
         if dados.get("sugestoes"):
             self._tabela(self.nomes_fixos["Sugestões"],
                          ("ID", "Serviço sugerido", "Motivo", "Local / elemento", "Fonte", "Unidade",
